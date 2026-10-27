@@ -1,33 +1,33 @@
 import sqlite3
-from fastapi import FastApi
+from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from uuid import uuid4
 
-app = FastApi()
-
-Class User():
+class User(BaseModel):
     id_user: int
     name: str | None = None
-    pw: str
+    pw_hash: str
 
+app = FastAPI()
 @app.get("/")
 def root():
     return {"message": "Root"}
-@app.get("/auth")
+@app.post("/auth")
 # A changer avant la prod !!!
-
 def auth(user: User):
     con = sqlite3.connect("skooly.db")
     cur=con.cursor()
-    id_user = cur.execute("""
+    id_user1 = cur.execute("""
     SELECT id_user FROM users
-    WHERE id_user = ? OR name= ?
-    """,(user.id_user, user.name))
-    token = uuid4()
+    WHERE id_user = ?;
+    """,(user.id_user,)).fetchall()
+    # usage of ai to debug the above line
+    print(id_user1)
+    token = str(uuid4())
     cur.execute("""
     INSERT INTO tokens (id_user, token)
     VALUES (?, ?)
-    """,(id_user, token))
+    """,((id_user1[-1]), (token)))
     con.close()
-    response = {"id_user": id_user,"auth_token": token}
+    response = {"id_user": id_user1,"auth_token": token}
     return response
