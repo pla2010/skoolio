@@ -1,4 +1,6 @@
 import sqlite3
+from fastapi import FastApi
+from pydantic import *
 con = sqlite3.connect("skooly.db")
 cur = con.cursor()
 cur.execute("""
@@ -25,3 +27,8 @@ FOREIGN KEY (id_user) references users (id_user)
 FOREIGN KEY (id_class) references class (id_class)
 );
 """)
+app = FastApi()
+@app.get("/")
+def root():
+    return {"message": "Root"}
+    
