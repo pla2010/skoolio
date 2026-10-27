@@ -25,3 +25,17 @@ FOREIGN KEY (id_user) references users (id_user)
 FOREIGN KEY (id_class) references class (id_class)
 );
 """)
+cur.execute("""
+CREATE TABLE IF NOT EXISTS tokens (
+id_user INTEGER PRIMARY KEY,
+token INTEGER,
+FOREIGN KEY (id_user) references users (id_user)
+);
+"""
+)
+cur.execute(
+    """
+    INSERT INTO users (id_user, name, pw_hash, type)
+    VALUES (0, "adm", "0", 0)
+    """
+)
