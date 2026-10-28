@@ -17,22 +17,26 @@ def root():
 def auth(user: User):
     con = sqlite3.connect("skooly.db")
     cur=con.cursor()
-    id_user1 = cur.execute("""
-    SELECT id_user FROM users
+    user_data = cur.execute("""
+    SELECT id_user, pw_hash FROM users
     WHERE id_user = ?;
     """,(user.id_user,)).fetchone()
+    id_user = user_data[0]
+    pw_hash_user = user_data[1]
+    if pw_hash_user == user.pw_hash:
+        
     # usage of ai to debug the above line
-    print(id_user1)
+    print(user_data)
     token = str(uuid4())
     cur.execute("""
     DELETE FROM tokens
     WHERE id_user = ?
-    """,(id_user1[-1],))
+    """,(user_data[-1][0],))
     cur.execute("""
     INSERT INTO tokens (id_user, token)
     VALUES (?, ?)
-    """,((id_user1[-1]), (token)))
+    """,((user_data[-1]), (token)))
     con.commit()
     con.close()
-    response = {"id_user": id_user1,"auth_token": token}
+    response = {"id_user": user_data,"auth_token": token}
     return response
