@@ -40,3 +40,18 @@ def auth(user: User):
         return response
     else:
         return {"error": "password incorrect"}
+@app.post("/retrieve/user_data")
+def retrieve_user_data(user: User, token: str):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(user.id_user,)).fetchone()
+    if token == token_verify:
+        user_name = cur.execute("""
+        SELECT name FROM users
+        WHERE id_user = ?;
+        """,(user.id_user,)).fetchone()
+        return {"user_name": user_name}
+    else:
+        return {"error": "Unauthorized"}
