@@ -20,7 +20,7 @@ def auth(user: User):
     id_user1 = cur.execute("""
     SELECT id_user FROM users
     WHERE id_user = ?;
-    """,(user.id_user,)).fetchall()
+    """,(user.id_user,)).fetchone()
     # usage of ai to debug the above line
     print(id_user1)
     token = str(uuid4())
@@ -28,6 +28,7 @@ def auth(user: User):
     INSERT INTO tokens (id_user, token)
     VALUES (?, ?)
     """,((id_user1[-1]), (token)))
+    con.commit()
     con.close()
     response = {"id_user": id_user1,"auth_token": token}
     return response

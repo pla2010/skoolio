@@ -28,7 +28,8 @@ FOREIGN KEY (id_class) references class (id_class)
 """)
 cur.execute("""
 CREATE TABLE IF NOT EXISTS tokens (
-id_user INTEGER PRIMARY KEY,
+id_token INTEGER PRIMARY KEY AUTOINCREMENT,
+id_user INTEGER ,
 token INTEGER,
 FOREIGN KEY (id_user) references users (id_user)
 );
@@ -40,3 +41,4 @@ cur.execute(
     VALUES (0, "adm", "0", 0);
     """
 )
+con.commit()
