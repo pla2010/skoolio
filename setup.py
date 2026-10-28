@@ -23,7 +23,7 @@ id_linking INTEGER PRIMARY KEY AUTOINCREMENT,
 id_user INTEGER,
 id_class INTEGER,
 FOREIGN KEY (id_user) references users (id_user),
-FOREIGN KEY (id_class) references class (id_class)
+FOREIGN KEY (id_class) references classes(id_class)
 );
 """)
 cur.execute("""

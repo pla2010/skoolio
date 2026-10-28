@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from uuid import uuid4
 
 class User(BaseModel):
-    id_user: int
+    id_user: int | None = None
     name: str | None = None
     pw_hash: str | None = None
 
@@ -47,7 +47,7 @@ def retrieve_user_data(user: User, token: str):
     token_verify = cur.execute("""
     SELECT token FROM tokens WHERE id_user = ?
     """,(user.id_user,)).fetchone()
-    if token[0] == token_verify:
+    if token == token_verify[0]:
         user_name = cur.execute("""
         SELECT name FROM users
         WHERE id_user = ?;
@@ -55,3 +55,18 @@ def retrieve_user_data(user: User, token: str):
         return {"user_name": user_name}
     else:
         return {"error": "Unauthorized"}
+@app.post("/create_user")
+def create_user(user: User):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    cur.execute("""
+    INSERT INTO users (name, pw_hash, type)
+    VALUES (?, ?, 1)
+    """, (user.name, user.pw_hash))
+    con.commit()
+    id_newuser = cur.execute("""
+    SELECT id_user FROM users
+    WHERE name = ?
+    """,(user.name,)).fetchone()
+    if id_newuser:
+        return {"id_user": id_newuser}
