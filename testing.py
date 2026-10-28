@@ -19,3 +19,7 @@ WHERE id_user = 0;
 id_user = user_data[0]
 pw_hash_user = user_data[1]
 print(f"id user : {id_user}, pw hash : {pw_hash_user}")
+token_verify = cur.execute("""
+SELECT token FROM tokens WHERE id_user = 1
+""").fetchone()
+print(token_verify[0])

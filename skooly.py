@@ -21,6 +21,8 @@ def auth(user: User):
     SELECT id_user, pw_hash FROM users
     WHERE id_user = ?;
     """,(user.id_user,)).fetchone()
+    if not user_data:
+        return {"error": "no such data in database"}
     # usage of ai to debug the above line
     id_user_db = user_data[0]
     pw_hash_user = user_data[1]
@@ -48,11 +50,14 @@ def retrieve_user_data(user: User, token: str):
     token_verify = cur.execute("""
     SELECT token FROM tokens WHERE id_user = ?
     """,(user.id_user,)).fetchone()
+    if not token_verify:
+        return {"error": "Unauthorized"}
     if token == token_verify[0]:
         user_name = cur.execute("""
         SELECT name FROM users
         WHERE id_user = ?;
         """,(user.id_user,)).fetchone()
+        con.close()
         return {"user_name": user_name}
     else:
         return {"error": "Unauthorized"}
@@ -69,6 +74,7 @@ def create_user(user: User):
     SELECT id_user FROM users
     WHERE name = ?
     """,(user.name,)).fetchone()
+    con.close()
     if id_newuser:
         return {"id_user": id_newuser}
     else:
@@ -80,18 +86,27 @@ def delete_user(user: User, token: str):
     token_verify = cur.execute("""
     SELECT token FROM tokens WHERE id_user = ?
     """,(user.id_user,)).fetchone()
-    if token == token_verify[0]:
-        user_name = cur.execute("""
-        DELETE FROM users
-        WHERE id_user = ?
-        """,(user.id_user,))
-        checking = cur.execute("""
-        SELECT * FROM users
-        WHERE id_user = ?
-        """,(user.id_user,)).fetchone()
-        if not checking:
-            return {"user_name": user_name}
+    try:
+        if token == token_verify[0]:
+            cur.execute("""
+            DELETE FROM users
+            WHERE id_user = ?
+            """,(user.id_user,))
+            cur.execute("""
+            DELETE FROM tokens
+            WHERE id_user = ?
+            """,(user.id_user,))
+            checking = cur.execute("""
+            SELECT * FROM users
+            WHERE id_user = ?
+            """,(user.id_user,)).fetchone()
+            con.commit()
+            con.close()
+            if not checking:
+                return {"message": "Account Deleted"}
+            else:
+                return {"error": "Account not deleted"}
         else:
-            return {"error": "Account not deleted"}
-    else:
-        return {"error": "Unauthorized"}
+            return {"error": "Unauthorized"}
+    except TypeError as e:
+        return {"error": f"Type error, full error : {e}"}
