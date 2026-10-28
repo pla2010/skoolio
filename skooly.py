@@ -24,6 +24,7 @@ def auth(user: User):
     # usage of ai to debug the above line
     id_user_db = user_data[0]
     pw_hash_user = user_data[1]
+    # / ! \ !!! Méthode non secure, possible voler et copier le hash, a changer absolument !
     if pw_hash_user == user.pw_hash:
         token = str(uuid4())
         cur.execute("""
@@ -70,3 +71,27 @@ def create_user(user: User):
     """,(user.name,)).fetchone()
     if id_newuser:
         return {"id_user": id_newuser}
+    else:
+        return {"error": "account not created."}
+@app.post("/delete_user")
+def delete_user(user: User, token: str):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(user.id_user,)).fetchone()
+    if token == token_verify[0]:
+        user_name = cur.execute("""
+        DELETE FROM users
+        WHERE id_user = ?
+        """,(user.id_user,))
+        checking = cur.execute("""
+        SELECT * FROM users
+        WHERE id_user = ?
+        """,(user.id_user,)).fetchone()
+        if not checking:
+            return {"user_name": user_name}
+        else:
+            return {"error": "Account not deleted"}
+    else:
+        return {"error": "Unauthorized"}
