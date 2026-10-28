@@ -30,7 +30,7 @@ cur.execute("""
 CREATE TABLE IF NOT EXISTS tokens (
 id_token INTEGER PRIMARY KEY AUTOINCREMENT,
 id_user INTEGER ,
-token INTEGER,
+token STRING,
 FOREIGN KEY (id_user) references users (id_user)
 );
 """

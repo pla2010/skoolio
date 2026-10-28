@@ -6,7 +6,7 @@ from uuid import uuid4
 class User(BaseModel):
     id_user: int
     name: str | None = None
-    pw_hash: str
+    pw_hash: str | None = None
 
 app = FastAPI()
 @app.get("/")
@@ -47,7 +47,7 @@ def retrieve_user_data(user: User, token: str):
     token_verify = cur.execute("""
     SELECT token FROM tokens WHERE id_user = ?
     """,(user.id_user,)).fetchone()
-    if token == token_verify:
+    if token[0] == token_verify:
         user_name = cur.execute("""
         SELECT name FROM users
         WHERE id_user = ?;
