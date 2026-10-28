@@ -38,7 +38,7 @@ FOREIGN KEY (id_user) references users (id_user)
 cur.execute(
     """
     INSERT INTO users (id_user, name, pw_hash, type)
-    VALUES (0, "adm", "0", 0);
+    VALUES (0, "adm", "test", 0);
     """
 )
 
