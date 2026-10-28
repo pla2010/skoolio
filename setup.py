@@ -41,4 +41,5 @@ cur.execute(
     VALUES (0, "adm", "0", 0);
     """
 )
+
 con.commit()

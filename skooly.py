@@ -25,6 +25,10 @@ def auth(user: User):
     print(id_user1)
     token = str(uuid4())
     cur.execute("""
+    DELETE FROM tokens
+    WHERE id_user = ?
+    """,(id_user1[-1],))
+    cur.execute("""
     INSERT INTO tokens (id_user, token)
     VALUES (?, ?)
     """,((id_user1[-1]), (token)))
