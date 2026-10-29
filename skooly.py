@@ -126,8 +126,8 @@ def retrieve_user_data(user: User, token: str):
     if not token_verify:
         return {"error": "Unauthorized"}
     if token == token_verify[0]:
-        user_name = cur.execute("""
-        SELECT name FROM users
+        user_data = cur.execute("""
+        SELECT name, type FROM users
         WHERE id_user = ?;
         """,(user.id_user,)).fetchone()
         con.close()
@@ -135,7 +135,7 @@ def retrieve_user_data(user: User, token: str):
     else:
         return {"error": "Unauthorized"}
 @app.post("/change_user_type/")
-def change_user_type(user:User, token: str, user_change_id: int):
+def change_user_type(user:User, token: str, user_change_id: int, user_new_id: int):
     con = sqlite3.connect("skooly.db")
     cur=con.cursor()
     token_verify = cur.execute("""
@@ -151,9 +151,9 @@ def change_user_type(user:User, token: str, user_change_id: int):
         if user_type[0] == 0:
             cur.execute("""
             UPDATE users
-            SET type = 0
+            SET type = ?
             WHERE id_user = ?;
-            """,(user_change_id,))
+            """,(user_new_id, user_change_id))
             con.commit()
             con.close()
             return {"code": "200"}
