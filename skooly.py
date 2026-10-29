@@ -136,7 +136,7 @@ def retrieve_user_data(user: User, token: str):
         return {"error": "Unauthorized"}
 @app.post("/change_user_type/")
 def change_user_type(user:User, token: str, user_change_id: int):
-        con = sqlite3.connect("skooly.db")
+    con = sqlite3.connect("skooly.db")
     cur=con.cursor()
     token_verify = cur.execute("""
     SELECT token FROM tokens WHERE id_user = ?
