@@ -21,9 +21,10 @@ def auth(user: User):
     SELECT id_user, pw_hash FROM users
     WHERE id_user = ?;
     """,(user.id_user,)).fetchone()
+    # usage of ai to debug the above line
     if not user_data:
         return {"error": "no such data in database"}
-    # usage of ai to debug the above line
+
     id_user_db = user_data[0]
     pw_hash_user = user_data[1]
     # / ! \ !!! Méthode non secure, possible voler et copier le hash, a changer absolument !
@@ -43,24 +44,6 @@ def auth(user: User):
         return response
     else:
         return {"error": "password incorrect"}
-@app.post("/retrieve/user_data")
-def retrieve_user_data(user: User, token: str):
-    con = sqlite3.connect("skooly.db")
-    cur=con.cursor()
-    token_verify = cur.execute("""
-    SELECT token FROM tokens WHERE id_user = ?
-    """,(user.id_user,)).fetchone()
-    if not token_verify:
-        return {"error": "Unauthorized"}
-    if token == token_verify[0]:
-        user_name = cur.execute("""
-        SELECT name FROM users
-        WHERE id_user = ?;
-        """,(user.id_user,)).fetchone()
-        con.close()
-        return {"user_name": user_name}
-    else:
-        return {"error": "Unauthorized"}
 @app.post("/create_user")
 def create_user(user: User):
     con = sqlite3.connect("skooly.db")
@@ -110,3 +93,46 @@ def delete_user(user: User, token: str):
             return {"error": "Unauthorized"}
     except TypeError as e:
         return {"error": f"Type error, full error : {e}"}
+@app.post("/retrieve/user_data")
+def retrieve_user_data(user: User, token: str):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(user.id_user,)).fetchone()
+    if not token_verify:
+        return {"error": "Unauthorized"}
+    if token == token_verify[0]:
+        user_name = cur.execute("""
+        SELECT name FROM users
+        WHERE id_user = ?;
+        """,(user.id_user,)).fetchone()
+        con.close()
+        return {"user_name": user_name}
+    else:
+        return {"error": "Unauthorized"}
+@app.post("/change_user_type/")
+def change_user_type(user:User, token: str, user_change_id: int):
+        con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(user.id_user,)).fetchone()
+    if not token_verify:
+        return {"error": "Unauthorized"}
+    if token == token_verify[0]:
+        user_type = cur.execute("""
+        SELECT type FROM users
+        WHERE id_user = ?;
+        """,(user.id_user,)).fetchone()
+        if user_type[0] == 0:
+            cur.execute("""
+            UPDATE users
+            SET type = 0
+            WHERE id_user = ?;
+            """,(user_change_id,))
+            con.commit()
+            con.close()
+            return {"mesasge": "User Type changed"}
+        return {"error": "Unauthorized"}
+    return {"error": "Unauthorized"}
