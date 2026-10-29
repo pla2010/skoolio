@@ -12,9 +12,18 @@ type int NOT NULL
 cur.execute("""
 CREATE TABLE IF NOT EXISTS classes (
 id_class INTEGER PRIMARY KEY AUTOINCREMENT,
-id_teacher INTEGER,
+id_teacher INTEGER NOT NULL,
 name_class text NOT NULL,
 FOREIGN KEY (id_teacher) REFERENCES users(id_user)
+);
+""")
+cur.execute("""
+CREATE TABLE IF NOT EXISTS classes (
+id_course INTEGER PRIMARY KEY AUTOINCREMENT,
+id_class INTEGER,
+name_course TEXT NOT NULL,
+content TEXT,
+FOREIGN KEY (id_class) REFERENCES classes(id_class)
 );
 """)
 cur.execute("""

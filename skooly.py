@@ -7,13 +7,36 @@ class User(BaseModel):
     id_user: int | None = None
     name: str | None = None
     pw_hash: str | None = None
-
+class Course(BaseModel):
+    id_course: int | None = None
+    id_class: int | None = None
+    name_class: str | None = None
+    id_course: int | None = None
+    name_course: str | None = None
+    content_course: str | None = None
+class Class(BaseModel):
+    id_class: int | None = None
+    id_teacher: int | None = 0
+    name_class: str | None = "Example"
 app = FastAPI()
 @app.get("/")
 def root():
     return {"message": "Root"}
+@app.post("/template")
+def template(user: User, token: str):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(user.id_user,)).fetchone()
+    if not token_verify:
+        return {"error": "Unauthorized"}
+    if token == token_verify[0]:
+        return {"code": "200"}
+    else:
+        return {"error": "Unauthorized"}
 @app.post("/auth")
-# A changer avant la prod !!!
+# A changer avant la prod (hash supplémentaire mot de passe)!!!
 def auth(user: User):
     con = sqlite3.connect("skooly.db")
     cur=con.cursor()
@@ -86,7 +109,7 @@ def delete_user(user: User, token: str):
             con.commit()
             con.close()
             if not checking:
-                return {"message": "Account Deleted"}
+                return {"code": "200"}
             else:
                 return {"error": "Account not deleted"}
         else:
@@ -133,6 +156,32 @@ def change_user_type(user:User, token: str, user_change_id: int):
             """,(user_change_id,))
             con.commit()
             con.close()
-            return {"mesasge": "User Type changed"}
+            return {"code": "200"}
         return {"error": "Unauthorized"}
     return {"error": "Unauthorized"}
+@app.post("/create_class")
+def template(user: User, token: str, class_data: Class):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(user.id_user,)).fetchone()
+    if not token_verify:
+        return {"error": "Unauthorized"}
+    if token == token_verify[0]:
+        user_type = cur.execute("""
+        SELECT type FROM users
+        WHERE id_user = ?;
+        """,(user.id_user,)).fetchone()
+        if user_type[0] == 0:
+            cur.execute("""
+            INSERT INTO classes(name_class, id_teacher)
+            VALUES (?,?);
+            """,(class_data.name_class, class_data.id_teacher))
+            class_id = cur.execute("""
+            SELECT id_class FROM classes
+            WHERE name_class = ? AND id_teacher = ?;
+            """, (class_data.name_class, class_data.id_teacher)).fetchone()
+            return {"id_class": class_id}
+    else:
+        return {"error": "Unauthorized"}
