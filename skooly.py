@@ -155,7 +155,6 @@ def change_user_type(user:User, token: str, user_change_id: int, user_new_id: in
     return {"error": "Unauthorized"}
 @app.post("/create_class")
 def template(user: User, token: str, class_data: Class):
-
     if verify_token(user.id_user, token) == True:
         con = sqlite3.connect("skooly.db")
         cur=con.cursor()
