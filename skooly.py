@@ -171,6 +171,10 @@ def template(user: User, token: str, class_data: Class):
             SELECT id_class FROM classes
             WHERE name_class = ? AND id_teacher = ?;
             """, (class_data.name_class, class_data.id_teacher)).fetchone()
+            con.commit()
+            con.close()
             return {"id_class": class_id}
+        con.close()
     else:
+        con.close()
         return {"error": "Unauthorized"}
