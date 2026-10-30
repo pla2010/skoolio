@@ -36,14 +36,9 @@ def root():
     return {"message": "Root"}
 @app.post("/template")
 def template(user: User, token: str):
-    con = sqlite3.connect("skooly.db")
-    cur=con.cursor()
-    token_verify = cur.execute("""
-    SELECT token FROM tokens WHERE id_user = ?
-    """,(user.id_user,)).fetchone()
-    if not token_verify:
-        return {"error": "Unauthorized"}
-    if token == token_verify[0]:
+    if verify_token(user.id_user, token) == True:
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()        
         return {"code": "200"}
     else:
         return {"error": "Unauthorized"}
@@ -154,7 +149,7 @@ def change_user_type(user:User, token: str, user_change_id: int, user_new_id: in
         return {"error": "Unauthorized"}
     return {"error": "Unauthorized"}
 @app.post("/create_class")
-def template(user: User, token: str, class_data: Class):
+def create_class(user: User, token: str, class_data: Class):
     if verify_token(user.id_user, token) == True:
         con = sqlite3.connect("skooly.db")
         cur=con.cursor()
@@ -178,3 +173,25 @@ def template(user: User, token: str, class_data: Class):
     else:
         con.close()
         return {"error": "Unauthorized"}
+@app.post("/add_student_to_class")
+def template(user: User, token: str, user_to_add: User, class: Class):
+    if verify_token(user.id_user, token) == True:
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()
+        cur.execute("""
+        SELECT id_user FROM classes
+        WHERE id_class = ?
+        """, (class.id_class,))
+        id_class_teacher = cur.fetchone().
+        if not id_class_teacher:
+            id_class_teacher = [0]
+        if id_class_teacher[0] = user.id_user:
+            cur.execute("""
+            INSERT INTO students_in_classes (id_user, id_class)
+            VALUES (?, ?);
+            """, (user_to_add.id_user, class.id_class))
+            con.commit()
+            con.close()
+            return {"code": "200"}
+        return {"error": "Unauthorized"}
+    return {"error": "Unauthorized"}
