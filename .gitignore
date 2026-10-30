@@ -1,2 +1,3 @@
 skooly.db
-
+skooly.db-journal
+__pycache__/*
