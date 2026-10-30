@@ -11,7 +11,6 @@ class Course(BaseModel):
     id_course: int | None = None
     id_class: int | None = None
     name_class: str | None = None
-    id_course: int | None = None
     name_course: str | None = None
     content_course: str | None = None
 class Class(BaseModel):
@@ -190,6 +189,27 @@ def template(user: User, token: str, user_to_add: User, class: Class):
             INSERT INTO students_in_classes (id_user, id_class)
             VALUES (?, ?);
             """, (user_to_add.id_user, class.id_class))
+            con.commit()
+            con.close()
+            return {"code": "200"}
+        return {"error": "Unauthorized"}
+    return {"error": "Unauthorized"}
+@app.post("/post_course")
+def post_course(user: User, token: str, course: Course):
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()
+        cur.execute("""
+        SELECT id_user FROM classes
+        WHERE id_class = ?
+        """, (class.id_class,))
+        id_class_teacher = cur.fetchone().
+        if not id_class_teacher:
+            id_class_teacher = [0]
+        if id_class_teacher[0] = user.id_user:
+            cur.execute("""
+            INSERT INTO courses (id_class, name_course, content)
+            VALUES (?, ?, ?);
+            """, (course.id_class, course.name_course, course.content_course))
             con.commit()
             con.close()
             return {"code": "200"}

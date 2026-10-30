@@ -18,7 +18,7 @@ FOREIGN KEY (id_teacher) REFERENCES users(id_user)
 );
 """)
 cur.execute("""
-CREATE TABLE IF NOT EXISTS classes (
+CREATE TABLE IF NOT EXISTS courses (
 id_course INTEGER PRIMARY KEY AUTOINCREMENT,
 id_class INTEGER,
 name_course TEXT NOT NULL,
