@@ -18,6 +18,18 @@ class Class(BaseModel):
     id_class: int | None = None
     id_teacher: int | None = 0
     name_class: str | None = "Example"
+def verify_token(id_user: int, token: str):
+    con = sqlite3.connect("skooly.db")
+    cur=con.cursor()
+    token_verify = cur.execute("""
+    SELECT token FROM tokens WHERE id_user = ?
+    """,(id_user,)).fetchone()
+    con.close()
+    if not token_verify:
+        return False
+    if token == token_verify[0]:
+        return True
+    return False
 app = FastAPI()
 @app.get("/")
 def root():
@@ -87,45 +99,32 @@ def create_user(user: User):
         return {"error": "account not created."}
 @app.post("/delete_user")
 def delete_user(user: User, token: str):
-    con = sqlite3.connect("skooly.db")
-    cur=con.cursor()
-    token_verify = cur.execute("""
-    SELECT token FROM tokens WHERE id_user = ?
-    """,(user.id_user,)).fetchone()
-    try:
-        if token == token_verify[0]:
-            cur.execute("""
-            DELETE FROM users
-            WHERE id_user = ?
-            """,(user.id_user,))
-            cur.execute("""
-            DELETE FROM tokens
-            WHERE id_user = ?
-            """,(user.id_user,))
-            checking = cur.execute("""
-            SELECT * FROM users
-            WHERE id_user = ?
-            """,(user.id_user,)).fetchone()
-            con.commit()
-            con.close()
-            if not checking:
-                return {"code": "200"}
-            else:
-                return {"error": "Account not deleted"}
-        else:
-            return {"error": "Unauthorized"}
-    except TypeError as e:
-        return {"error": f"Type error, full error : {e}"}
+    if verify_token(user.id_user, token) == True:
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()
+        cur.execute("""
+        DELETE FROM users
+        WHERE id_user = ?
+        """,(user.id_user,))
+        cur.execute("""
+        DELETE FROM tokens
+        WHERE id_user = ?
+        """,(user.id_user,))
+        checking = cur.execute("""
+        SELECT * FROM users
+        WHERE id_user = ?
+        """,(user.id_user,)).fetchone()
+        con.commit()
+        con.close()
+        if not checking:
+            return {"code": "200"}
+        return {"error": "Account not deleted"}
+    return {"error": "Unauthorized"}
 @app.post("/retrieve/user_data")
 def retrieve_user_data(user: User, token: str):
-    con = sqlite3.connect("skooly.db")
-    cur=con.cursor()
-    token_verify = cur.execute("""
-    SELECT token FROM tokens WHERE id_user = ?
-    """,(user.id_user,)).fetchone()
-    if not token_verify:
-        return {"error": "Unauthorized"}
-    if token == token_verify[0]:
+    if verify_token(user.id_user, token) == True:
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()
         user_data = cur.execute("""
         SELECT name, type FROM users
         WHERE id_user = ?;
@@ -136,14 +135,9 @@ def retrieve_user_data(user: User, token: str):
         return {"error": "Unauthorized"}
 @app.post("/change_user_type/")
 def change_user_type(user:User, token: str, user_change_id: int, user_new_id: int):
-    con = sqlite3.connect("skooly.db")
-    cur=con.cursor()
-    token_verify = cur.execute("""
-    SELECT token FROM tokens WHERE id_user = ?
-    """,(user.id_user,)).fetchone()
-    if not token_verify:
-        return {"error": "Unauthorized"}
-    if token == token_verify[0]:
+    if verify_token(user.id_user, token) == True:
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()
         user_type = cur.execute("""
         SELECT type FROM users
         WHERE id_user = ?;
@@ -161,14 +155,10 @@ def change_user_type(user:User, token: str, user_change_id: int, user_new_id: in
     return {"error": "Unauthorized"}
 @app.post("/create_class")
 def template(user: User, token: str, class_data: Class):
-    con = sqlite3.connect("skooly.db")
-    cur=con.cursor()
-    token_verify = cur.execute("""
-    SELECT token FROM tokens WHERE id_user = ?
-    """,(user.id_user,)).fetchone()
-    if not token_verify:
-        return {"error": "Unauthorized"}
-    if token == token_verify[0]:
+
+    if verify_token(user.id_user, token) == True:
+        con = sqlite3.connect("skooly.db")
+        cur=con.cursor()
         user_type = cur.execute("""
         SELECT type FROM users
         WHERE id_user = ?;
