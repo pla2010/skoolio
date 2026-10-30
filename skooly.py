@@ -173,22 +173,22 @@ def create_class(user: User, token: str, class_data: Class):
         con.close()
         return {"error": "Unauthorized"}
 @app.post("/add_student_to_class")
-def template(user: User, token: str, user_to_add: User, class: Class):
+def template(user: User, token: str, user_to_add: User, classe: Class):
     if verify_token(user.id_user, token) == True:
         con = sqlite3.connect("skooly.db")
         cur=con.cursor()
         cur.execute("""
-        SELECT id_user FROM classes
+        SELECT id_teacher FROM classes
         WHERE id_class = ?
-        """, (class.id_class,))
-        id_class_teacher = cur.fetchone().
+        """, (classe.id_class,))
+        id_class_teacher = cur.fetchone()
         if not id_class_teacher:
             id_class_teacher = [0]
-        if id_class_teacher[0] = user.id_user:
+        if id_class_teacher[0] == user.id_user:
             cur.execute("""
             INSERT INTO students_in_classes (id_user, id_class)
             VALUES (?, ?);
-            """, (user_to_add.id_user, class.id_class))
+            """, (user_to_add.id_user, classe.id_class))
             con.commit()
             con.close()
             return {"code": "200"}
@@ -196,16 +196,17 @@ def template(user: User, token: str, user_to_add: User, class: Class):
     return {"error": "Unauthorized"}
 @app.post("/post_course")
 def post_course(user: User, token: str, course: Course):
+    if verify_token(user.id_user, token) == True:
         con = sqlite3.connect("skooly.db")
         cur=con.cursor()
         cur.execute("""
-        SELECT id_user FROM classes
+        SELECT id_teacher FROM classes
         WHERE id_class = ?
-        """, (class.id_class,))
-        id_class_teacher = cur.fetchone().
+        """, (course.id_class,))
+        id_class_teacher = cur.fetchone()
         if not id_class_teacher:
             id_class_teacher = [0]
-        if id_class_teacher[0] = user.id_user:
+        if id_class_teacher[0] == user.id_user:
             cur.execute("""
             INSERT INTO courses (id_class, name_course, content)
             VALUES (?, ?, ?);
